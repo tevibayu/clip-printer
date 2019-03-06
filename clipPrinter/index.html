@@ -1,0 +1,125 @@
+<html>
+<body>
+
+  <style>
+    #pdf-viewer {
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0);
+      overflow: auto;
+    }
+
+    .pdf-page-canvas {
+      display: block;
+      margin: 5px auto;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+  </style>
+
+  <!-- <canvas id="the-canvas" style="border:1px solid black"></canvas> -->
+  <div id='pdf-viewer'></div>
+  <!-- Use latest PDF.js build from Github -->
+  <script type="text/javascript" src="https://mozilla.github.io/pdf.js/build/pdf.js"></script>
+  <script type="text/javascript" src="encode.js"></script>
+  
+  <script type="text/javascript">
+
+ var API_KEY = '';
+  
+
+  var clipPrinter = {
+
+      createFromPdf: function(elementId, PDF){
+
+        var arr = [];
+        var thePdf = null;
+
+        return JSON.stringify(pdf(PDF));
+
+        function pdf (url){
+            pdfjsLib.disableWorker = true;
+
+            pdfjsLib.getDocument(url).then(function(pdf) {
+              thePdf = pdf;
+
+              viewer = document.getElementById(elementId);
+
+              for(page = 1; page <= pdf.numPages; page++) {
+                canvas = document.createElement("canvas");    
+                canvas.className = 'pdf-page-canvas';         
+                viewer.appendChild(canvas);
+                getPdfContainer(page, canvas);
+              }
+            });
+
+            
+        }
+
+        function getPdfContainer(page, canvas) {
+          thePdf.getPage(page).then(function(page) {
+            var scale = 1;
+            viewport = page.getViewport(scale);
+            
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            var base = canvas.toDataURL("image/png");
+
+            
+            var base64result = base.replace(/^data:image\/(png|jpg);base64,/, "");
+            // base64result = atob(base64result);
+            console.log(base64result)
+
+            // var enc = atob(base64result);
+            // console.log(enc)
+            setTimeout(function(){
+              var build = API_KEY+'_png_%_'+base64result;
+              clipPrinter.send(elementId, build);
+
+            }, 1000);
+
+            console.log(page.render({canvasContext: canvas.getContext('2d'), viewport: viewport}));
+
+          });
+        }
+      },
+    
+
+      api: function(API_){
+        API_KEY = API_;
+      },
+
+
+      send: function(elementId, result){
+        
+
+        document.getElementById(elementId).addEventListener('click', function(){
+          var textarea = document.createElement('textarea');
+          textarea.textContent = result;
+          document.body.appendChild(textarea);
+
+          var selection = document.getSelection();
+          var range = document.createRange();
+          range.selectNode(textarea);
+          selection.removeAllRanges();
+          selection.addRange(range);
+
+          console.log('Copy Status:', document.execCommand('copy'));
+          selection.removeAllRanges();
+
+          document.body.removeChild(textarea);
+          
+        })
+
+      },
+
+    };
+
+    var printer = new clipPrinter.api('089635669974');
+    clipPrinter.createFromPdf('pdf-viewer', 'ert.pdf');
+    
+   
+  </script>
+  
+</body>
+</html>
