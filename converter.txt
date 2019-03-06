@@ -1,0 +1,1 @@
+pyinstaller -y -F -w -i "C:/Users/tevi/Desktop/Printer.ico" --add-data "C:/Program Files/gs/gs9.26/bin/";"gs/" --exclude-module PyQt5 --exclude-module PyQt5-sip --exclude-module pyqt5-tools "C:/Users/tevi/Desktop/clip.py"
